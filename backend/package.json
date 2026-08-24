@@ -5,8 +5,8 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "start": "python run.py",
+    "dev": "granian --interface asgi app.main:app --reload"
   },
   "keywords": ["education", "attendance", "grading", "biometric"],
   "dependencies": {
