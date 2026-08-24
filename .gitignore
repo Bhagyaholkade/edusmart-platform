@@ -1,17 +1,21 @@
 # Dependencies
 node_modules/
 */node_modules/
+**/node_modules/
 
 # Environment variables
 .env
 .env.local
 .env.*.local
 *.env
+!.env.example
 
 # Build outputs
 dist/
 */dist/
+**/dist/
 build/
+*.tsbuildinfo
 
 # Logs
 logs
@@ -19,6 +23,8 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
 
 # Editor
 .vscode/
@@ -26,11 +32,29 @@ yarn-error.log*
 *.swp
 *.swo
 *~
+.DS_Store
 
 # OS
 .DS_Store
 Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Lock files (keep package-lock.json but ignore others)
-yarn.lock
-pnpm-lock.yaml
+# Lock files (optional - uncomment if you want to ignore them)
+# yarn.lock
+# pnpm-lock.yaml
+
+# Deprecated folders (keeping for reference but not tracking)
+Student-frontend/
+Student-backend/
+Teacher-frontend/
+Teacher-backend/
+
+# Cache
+.cache/
+.parcel-cache/
+.turbo/
+*.cache

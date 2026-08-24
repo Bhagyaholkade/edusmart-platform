@@ -1,0 +1,19 @@
+{
+  "name": "edusmart-unified-backend",
+  "version": "1.0.0",
+  "description": "Unified backend API for EduSmart Platform - supports both Teacher and Student portals",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["education", "attendance", "grading", "biometric"],
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "@supabase/supabase-js": "^2.39.0",
+    "openai": "^4.20.1"
+  }
+}
