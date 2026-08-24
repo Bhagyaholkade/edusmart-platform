@@ -5,10 +5,12 @@ from app.db.base import Base
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
+    # Use Supabase's UUID as the primary key
+    id = Column(String, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=True)
-    username = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
+    username = Column(String, unique=True, index=True, nullable=True)
+    # Password is handled by Supabase Auth, but keeping a placeholder just in case
+    # hashed_password = Column(String)
     full_name = Column(String)
     role = Column(String, index=True) # SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT
     is_active = Column(Boolean, default=True)

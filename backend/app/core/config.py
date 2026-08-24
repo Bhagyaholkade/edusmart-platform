@@ -17,8 +17,10 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
     
-    # DokGuru / External AI
-    DOKGURU_URL: str = "http://localhost:8000"
+    # Supabase Auth
+    SUPABASE_URL: str = "https://YOUR_PROJECT.supabase.co"
+    SUPABASE_SERVICE_KEY: str = "YOUR_SUPABASE_SERVICE_ROLE_KEY"
+    SUPABASE_JWT_SECRET: str = "YOUR_SUPABASE_JWT_SECRET"
     
     # Redis
     REDIS_URL: Optional[str] = None

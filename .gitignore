@@ -61,3 +61,8 @@ Teacher-backend/
 
 School_AI_Platform_Backend_Requirements.pdf
 School_AI_Platform_Frontend_Requirements.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class

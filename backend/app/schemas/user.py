@@ -17,7 +17,7 @@ class UserUpdate(UserBase):
     password: Optional[str] = None
 
 class UserInDBBase(UserBase):
-    id: int
+    id: str
     is_active: bool
     created_at: datetime
 

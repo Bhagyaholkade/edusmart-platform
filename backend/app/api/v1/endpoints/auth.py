@@ -24,20 +24,37 @@ async def login_access_token(
     # if not user:
     #     raise HTTPException(status_code=400, detail="Incorrect email or password")
     
-    # Mock authentication for demonstration
-    user_id = 1
-    role = "TEACHER"
-    
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = security.create_access_token(
-        subject=user_id, expires_delta=access_token_expires
-    )
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "role": role,
-        "user_id": user_id
-    }
+    # Call Supabase to authenticate
+    from app.integrations.supabase.client import SupabaseAuthClient
+    supabase_client = SupabaseAuthClient(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
+    try:
+        auth_response = await supabase_client.sign_in(email=form_data.username, password=form_data.password)
+    finally:
+        await supabase_client.close()
+
+    # Extract JWT and user info
+    access_token = auth_response["access_token"]
+    user_info = auth_response["user"]  # contains id (UUID), email, etc.
+    user_id = user_info["id"]
+    role = user_info.get("role", "STUDENT")  # default fallback
+
+    # Upsert user into our local DB (create if not exists)
+    from app.models.user import User
+    from sqlalchemy import select
+    result = await db.execute(select(User).where(User.id == user_id))
+    existing_user = result.scalars().first()
+    if not existing_user:
+        new_user = User(id=user_id, email=user_info.get("email"), username=user_info.get("email"), role=role)
+        db.add(new_user)
+        await db.commit()
+    else:
+        # Update role if changed
+        if existing_user.role != role:
+            existing_user.role = role
+            await db.commit()
+
+    return {"access_token": access_token, "token_type": "bearer", "role": role, "user_id": user_id}
+
 
 @router.get("/me", response_model=User)
 async def read_users_me(

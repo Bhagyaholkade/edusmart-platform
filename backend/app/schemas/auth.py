@@ -6,7 +6,7 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     role: str
-    user_id: int
+    user_id: str
 
 class TokenPayload(BaseModel):
     sub: Optional[str] = None
