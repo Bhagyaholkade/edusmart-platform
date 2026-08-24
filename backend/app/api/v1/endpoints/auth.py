@@ -55,6 +55,42 @@ async def login_access_token(
 
     return {"access_token": access_token, "token_type": "bearer", "role": role, "user_id": user_id}
 
+@router.post("/signup", response_model=Token)
+async def signup_user(
+    db: AsyncSession = Depends(deps.get_db),
+    form_data: OAuth2PasswordRequestForm = Depends()
+):
+    """Create a new user via Supabase Email/Password and return JWT.
+    Mirrors the login flow but uses the signup API.
+    """
+    from app.integrations.supabase.client import SupabaseAuthClient
+    supabase_client = SupabaseAuthClient(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
+    try:
+        auth_response = await supabase_client.sign_up(email=form_data.username, password=form_data.password)
+    finally:
+        await supabase_client.close()
+
+    access_token = auth_response["access_token"]
+    user_info = auth_response["user"]
+    user_id = user_info["id"]
+    role = user_info.get("role", "STUDENT")
+
+    # Upsert into local DB
+    from app.models.user import User
+    from sqlalchemy import select
+    result = await db.execute(select(User).where(User.id == user_id))
+    existing_user = result.scalars().first()
+    if not existing_user:
+        new_user = User(id=user_id, email=user_info.get("email"), username=user_info.get("email"), role=role)
+        db.add(new_user)
+        await db.commit()
+    else:
+        if existing_user.role != role:
+            existing_user.role = role
+            await db.commit()
+
+    return {"access_token": access_token, "token_type": "bearer", "role": role, "user_id": user_id}
+
 
 @router.get("/me", response_model=User)
 async def read_users_me(
