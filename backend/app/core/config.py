@@ -9,7 +9,8 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:3000"]
     
     # Database
-    DATABASE_URL: str = "sqlite+aiosqlite:///./sql_app.db" # Fallback for local testing
+    # Defaulting to Supabase PostgreSQL pattern. Use .env to override.
+    DATABASE_URL: str = "postgresql+asyncpg://postgres.project_ref:password@aws-0-eu-central-1.pooler.supabase.com:6543/postgres"
     
     # JWT Auth
     SECRET_KEY: str = "SECRET_KEY_CHANGE_IN_PRODUCTION" # Use `openssl rand -hex 32` to generate
