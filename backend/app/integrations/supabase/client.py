@@ -1,27 +1,81 @@
+# backend/app/integrations/supabase/client.py
 import httpx
-from typing import Dict, Any
+from fastapi import HTTPException
+from typing import Any, Dict
+
 
 class SupabaseAuthClient:
-    """Thin wrapper around Supabase Auth REST API.
-    Uses the service_role key for server‑side operations (sign‑in, sign‑up).
-    """
-    def __init__(self, supabase_url: str, service_key: str):
-        self.base_url = supabase_url.rstrip('/')
+    def __init__(self, url: str, service_key: str):
+        self.base_url = f"{url.rstrip('/')}/auth/v1"
         self.headers = {
             "apikey": service_key,
-            "Authorization": f"Bearer {service_key}",
             "Content-Type": "application/json",
         }
-        self.client = httpx.AsyncClient(base_url=self.base_url, headers=self.headers)
+        self._client: httpx.AsyncClient | None = None
 
-    async def sign_up(self, email: str, password: str) -> Dict[str, Any]:
-        """Create a new user via Supabase Auth.
-        Returns the raw JSON response which includes `user` and `access_token`.
+    async def _ensure_client(self) -> httpx.AsyncClient:
+        if self._client is None:
+            self._client = httpx.AsyncClient(
+                timeout=httpx.Timeout(10.0, read=30.0, write=10.0),
+                follow_redirects=True,
+            )
+        return self._client
+
+    async def sign_up(self, *, email: str, password: str) -> Dict[str, Any]:
         """
+        Calls Supabase /signup endpoint.
+        Returns the raw JSON on success.
+        Raises HTTPException on any failure.
+        """
+        client = await self._ensure_client()
         payload = {"email": email, "password": password}
-        resp = await self.client.post("/auth/v1/signup", json=payload)
-        resp.raise_for_status()
-        return resp.json()
+        try:
+            resp = await client.post(
+                f"{self.base_url}/signup",
+                json=payload,
+                headers=self.headers,
+            )
+            resp.raise_for_status()
+            return resp.json()
+        except (httpx.ConnectError, httpx.ReadTimeout) as exc:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Unable to reach Supabase at {self.base_url}: {exc}",
+            ) from exc
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(
+                status_code=exc.response.status_code,
+                detail=exc.response.text,
+            ) from exc
 
-    async def close(self):
-        await self.client.aclose()
+    async def sign_in(self, *, email: str, password: str) -> Dict[str, Any]:
+        """
+        Calls Supabase /token?grant_type=password endpoint.
+        Returns the raw JSON on success.
+        Raises HTTPException on any failure.
+        """
+        client = await self._ensure_client()
+        payload = {"email": email, "password": password}
+        try:
+            resp = await client.post(
+                f"{self.base_url}/token?grant_type=password",
+                json=payload,
+                headers=self.headers,
+            )
+            resp.raise_for_status()
+            return resp.json()
+        except (httpx.ConnectError, httpx.ReadTimeout) as exc:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Unable to reach Supabase at {self.base_url}: {exc}",
+            ) from exc
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(
+                status_code=exc.response.status_code,
+                detail=exc.response.text,
+            ) from exc
+
+    async def close(self) -> None:
+        if self._client:
+            await self._client.aclose()
+            self._client = None

@@ -7,10 +7,10 @@ Based on the V1 MVP Requirements for the EduSmart AI Learning Intelligence Platf
   - [x] Initialize FastAPI & Granian setup
   - [x] Database configuration & ORM Models
 
-- [ ] **Feature 1: Authentication & Authorization**
-  - [ ] Implement user registration endpoint
-  - [ ] Complete JWT login logic with database validation
-  - [ ] Implement RBAC middleware/dependency for protecting routes
+- [x] **Feature 1: Authentication & Authorization**
+  - [x] Implement user registration endpoint
+  - [x] Complete JWT login logic with database validation
+  - [x] Implement RBAC middleware/dependency for protecting routes
 
 - [ ] **Feature 2: School & Academic Hierarchy**
   - [ ] Implement CRUD for Schools
