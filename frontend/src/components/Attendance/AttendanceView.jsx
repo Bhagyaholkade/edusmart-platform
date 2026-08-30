@@ -6,16 +6,25 @@ import {
 } from 'lucide-react';
 
 export default function AttendanceView({ role, user }) {
-  const [activeClass, setActiveClass] = useState('Grade 10-A (Mathematics)');
+  const teacherClasses = user?.assignedClasses || [
+    'Grade 10-A (Mathematics)',
+    'Grade 10-B (Mathematics)',
+    'Grade 10-B (Physics)',
+    'Grade 9-A (Physics)',
+    'Grade 11-A (Biology)',
+    'Grade 11-B (Chemistry)'
+  ];
+
+  const [activeClass, setActiveClass] = useState(teacherClasses[0] || 'Grade 10-A (Mathematics)');
 
   if (role === 'teacher' || role === 'school_admin' || role === 'platform_admin') {
-    return <TeacherAttendance activeClass={activeClass} setActiveClass={setActiveClass} user={user} />;
+    return <TeacherAttendance activeClass={activeClass} setActiveClass={setActiveClass} teacherClasses={teacherClasses} user={user} />;
   }
 
   return <StudentAttendance user={user} />;
 }
 
-function TeacherAttendance({ activeClass, setActiveClass, user }) {
+function TeacherAttendance({ activeClass, setActiveClass, teacherClasses, user }) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -25,17 +34,10 @@ function TeacherAttendance({ activeClass, setActiveClass, user }) {
 
   // Notify Absent Parents Modal state
   const [showNotifyModal, setShowNotifyModal] = useState(false);
-  const [notifyLoading, setNotifyLoading] = useState(false);
   const [dispatchResultsMap, setDispatchResultsMap] = useState({});
-  const [modalSuccessMsg, setModalSuccessMsg] = useState('');
 
   // Student Profile Drawer/Modal state
   const [viewingStudentProfile, setViewingStudentProfile] = useState(null);
-
-  // Biometric Modal state
-  const [activeScanningStudent, setActiveScanningStudent] = useState(null);
-  const [scanMethod, setScanMethod] = useState('fingerprint'); // 'fingerprint' or 'facial'
-  const [isScanning, setIsScanning] = useState(false);
 
   // Add student form modal state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -45,6 +47,12 @@ function TeacherAttendance({ activeClass, setActiveClass, user }) {
   const [newParentPhone, setNewParentPhone] = useState('');
   const [newParentEmail, setNewParentEmail] = useState('');
 
+  // Register New Class Modal state
+  const [showRegisterClassModal, setShowRegisterClassModal] = useState(false);
+  const [newClassName, setNewClassName] = useState('');
+  const [newSubject, setNewSubject] = useState('');
+  const [registeredClassesList, setRegisteredClassesList] = useState(teacherClasses);
+
   // Edit student modal state
   const [editingStudent, setEditingStudent] = useState(null);
   const [editName, setEditName] = useState('');
@@ -53,64 +61,47 @@ function TeacherAttendance({ activeClass, setActiveClass, user }) {
   const [editParentPhone, setEditParentPhone] = useState('');
   const [editParentEmail, setEditParentEmail] = useState('');
 
-  // Initial rich student roster with parent contact details
-  const [students, setStudents] = useState([
-    { 
-      id: 1001, 
-      name: 'Alex Johnson', 
-      rollNumber: '1001', 
-      status: 'Present', 
-      time: '09:05 AM',
-      parentName: 'Sarah Johnson',
-      parentPhone: '+1 (555) 234-5678',
-      parentEmail: 'sarah.j@gmail.com',
-      attendanceRate: 96
-    },
-    { 
-      id: 1002, 
-      name: 'Sarah Williams', 
-      rollNumber: '1002', 
-      status: 'Absent', 
-      time: '-',
-      parentName: 'David Williams',
-      parentPhone: '+1 (555) 876-5432',
-      parentEmail: 'david.w@gmail.com',
-      attendanceRate: 78
-    },
-    { 
-      id: 1003, 
-      name: 'Michael Brown', 
-      rollNumber: '1003', 
-      status: 'Present', 
-      time: '09:02 AM',
-      parentName: 'Linda Brown',
-      parentPhone: '+1 (555) 345-6789',
-      parentEmail: 'linda.b@gmail.com',
-      attendanceRate: 94
-    },
-    { 
-      id: 1004, 
-      name: 'Emily Davis', 
-      rollNumber: '1004', 
-      status: 'Late', 
-      time: '09:20 AM',
-      parentName: 'Robert Davis',
-      parentPhone: '+1 (555) 456-7890',
-      parentEmail: 'robert.d@gmail.com',
-      attendanceRate: 88
-    },
-    { 
-      id: 1005, 
-      name: 'James Wilson', 
-      rollNumber: '1005', 
-      status: 'Present', 
-      time: '09:07 AM',
-      parentName: 'Karen Wilson',
-      parentPhone: '+1 (555) 567-8901',
-      parentEmail: 'karen.w@gmail.com',
-      attendanceRate: 91
-    },
-  ]);
+  // Per-Class Student Roster Database
+  const [classRosters, setClassRosters] = useState({
+    'Grade 10-A (Mathematics)': [
+      { id: 1001, name: 'Alex Johnson', rollNumber: '1001', status: 'Present', time: '09:05 AM', parentName: 'Sarah Johnson', parentPhone: '+1 (555) 234-5678', parentEmail: 'sarah.j@gmail.com', attendanceRate: 96 },
+      { id: 1002, name: 'Sarah Williams', rollNumber: '1002', status: 'Absent', time: '-', parentName: 'David Williams', parentPhone: '+1 (555) 876-5432', parentEmail: 'david.w@gmail.com', attendanceRate: 78 },
+      { id: 1003, name: 'Michael Brown', rollNumber: '1003', status: 'Present', time: '09:02 AM', parentName: 'Linda Brown', parentPhone: '+1 (555) 345-6789', parentEmail: 'linda.b@gmail.com', attendanceRate: 94 },
+      { id: 1004, name: 'Emily Davis', rollNumber: '1004', status: 'Late', time: '09:20 AM', parentName: 'Robert Davis', parentPhone: '+1 (555) 456-7890', parentEmail: 'robert.d@gmail.com', attendanceRate: 88 },
+      { id: 1005, name: 'James Wilson', rollNumber: '1005', status: 'Present', time: '09:07 AM', parentName: 'Karen Wilson', parentPhone: '+1 (555) 567-8901', parentEmail: 'karen.w@gmail.com', attendanceRate: 91 }
+    ],
+    'Grade 10-B (Mathematics)': [
+      { id: 2001, name: 'Lucas Vance', rollNumber: '2001', status: 'Present', time: '09:01 AM', parentName: 'Maria Vance', parentPhone: '+1 (555) 111-2222', parentEmail: 'maria.vance@gmail.com', attendanceRate: 98 },
+      { id: 2002, name: 'Emma Watson', rollNumber: '2002', status: 'Absent', time: '-', parentName: 'Christopher Watson', parentPhone: '+1 (555) 333-4444', parentEmail: 'chris.watson@gmail.com', attendanceRate: 82 },
+      { id: 2003, name: 'Oliver Queen', rollNumber: '2003', status: 'Present', time: '09:04 AM', parentName: 'Moira Queen', parentPhone: '+1 (555) 555-6666', parentEmail: 'moira.queen@gmail.com', attendanceRate: 95 }
+    ],
+    'Grade 10-B (Physics)': [
+      { id: 3001, name: 'Clara Oswald', rollNumber: '3001', status: 'Present', time: '11:32 AM', parentName: 'John Oswald', parentPhone: '+1 (555) 777-8888', parentEmail: 'john.oswald@gmail.com', attendanceRate: 97 },
+      { id: 3002, name: 'David Miller', rollNumber: '3002', status: 'Absent', time: '-', parentName: 'Susan Miller', parentPhone: '+1 (555) 999-0000', parentEmail: 'susan.m@gmail.com', attendanceRate: 76 },
+      { id: 3003, name: 'Ethan Hunt', rollNumber: '3003', status: 'Present', time: '11:30 AM', parentName: 'Julia Hunt', parentPhone: '+1 (555) 222-3333', parentEmail: 'julia.h@gmail.com', attendanceRate: 93 }
+    ],
+    'Grade 9-A (Physics)': [
+      { id: 4001, name: 'Liam Neeson', rollNumber: '4001', status: 'Present', time: '09:00 AM', parentName: 'Grace Neeson', parentPhone: '+1 (555) 444-5555', parentEmail: 'grace.n@gmail.com', attendanceRate: 99 },
+      { id: 4002, name: 'Zoe Saldana', rollNumber: '4002', status: 'Present', time: '09:03 AM', parentName: 'Marco Saldana', parentPhone: '+1 (555) 666-7777', parentEmail: 'marco.s@gmail.com', attendanceRate: 95 },
+      { id: 4003, name: 'Chloe Bennett', rollNumber: '4003', status: 'Absent', time: '-', parentName: 'Thomas Bennett', parentPhone: '+1 (555) 888-9999', parentEmail: 'thomas.b@gmail.com', attendanceRate: 80 }
+    ],
+    'Grade 11-A (Biology)': [
+      { id: 5001, name: 'Bruce Wayne', rollNumber: '5001', status: 'Present', time: '08:55 AM', parentName: 'Alfred Pennyworth', parentPhone: '+1 (555) 123-9999', parentEmail: 'alfred.p@gmail.com', attendanceRate: 100 },
+      { id: 5002, name: 'Diana Prince', rollNumber: '5002', status: 'Present', time: '08:58 AM', parentName: 'Hippolyta Prince', parentPhone: '+1 (555) 456-9999', parentEmail: 'hippolyta.p@gmail.com', attendanceRate: 96 },
+      { id: 5003, name: 'Barry Allen', rollNumber: '5003', status: 'Absent', time: '-', parentName: 'Henry Allen', parentPhone: '+1 (555) 789-9999', parentEmail: 'henry.a@gmail.com', attendanceRate: 74 }
+    ],
+    'Grade 11-B (Chemistry)': [
+      { id: 6001, name: 'Peter Parker', rollNumber: '6001', status: 'Present', time: '10:15 AM', parentName: 'May Parker', parentPhone: '+1 (555) 321-7777', parentEmail: 'may.p@gmail.com', attendanceRate: 97 },
+      { id: 6002, name: 'Gwen Stacy', rollNumber: '6002', status: 'Present', time: '10:12 AM', parentName: 'George Stacy', parentPhone: '+1 (555) 654-7777', parentEmail: 'george.s@gmail.com', attendanceRate: 99 },
+      { id: 6003, name: 'Miles Morales', rollNumber: '6003', status: 'Late', time: '10:25 AM', parentName: 'Rio Morales', parentPhone: '+1 (555) 987-7777', parentEmail: 'rio.m@gmail.com', attendanceRate: 86 }
+    ]
+  });
+
+  // Current active class student roster
+  const students = classRosters[activeClass] || [
+    { id: 7001, name: 'Sample Student A', rollNumber: '7001', status: 'Present', time: '09:00 AM', parentName: 'Parent A', parentPhone: '+1 (555) 000-1111', parentEmail: 'parent.a@gmail.com', attendanceRate: 95 },
+    { id: 7002, name: 'Sample Student B', rollNumber: '7002', status: 'Absent', time: '-', parentName: 'Parent B', parentPhone: '+1 (555) 000-2222', parentEmail: 'parent.b@gmail.com', attendanceRate: 79 }
+  ];
 
   const showToast = (msg, type = 'success') => {
     setToastMessage(msg);
@@ -123,6 +114,47 @@ function TeacherAttendance({ activeClass, setActiveClass, user }) {
   const handleMarkAttendance = (studentId, status) => {
     const updated = students.map(s => {
       if (s.id === studentId) {
+        const nowTime = status === 'Absent' ? '-' : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return { ...s, status, time: nowTime };
+      }
+      return s;
+    });
+
+    setClassRosters({
+      ...classRosters,
+      [activeClass]: updated
+    });
+
+    const studentObj = students.find(s => s.id === studentId);
+    if (status === 'Absent' && studentObj) {
+      showToast(`Student marked ABSENT. Parent notification ready for ${studentObj.parentName} (${studentObj.parentPhone})`, 'info');
+    } else if (status === 'Present') {
+      showToast(`Attendance marked PRESENT for ${studentObj?.name}`, 'success');
+    }
+  };
+
+  const handleRegisterNewClass = (e) => {
+    e.preventDefault();
+    if (!newClassName.trim()) return;
+
+    const formattedClass = `${newClassName.trim()} (${newSubject.trim() || 'General'})`;
+    if (!registeredClassesList.includes(formattedClass)) {
+      setRegisteredClassesList([...registeredClassesList, formattedClass]);
+      setClassRosters({
+        ...classRosters,
+        [formattedClass]: [
+          { id: Date.now() + 1, name: 'New Student 1', rollNumber: '101', status: 'Present', time: '09:00 AM', parentName: 'Parent 1', parentPhone: '+1 (555) 123-4567', parentEmail: 'parent1@gmail.com', attendanceRate: 100 },
+          { id: Date.now() + 2, name: 'New Student 2', rollNumber: '102', status: 'Present', time: '09:02 AM', parentName: 'Parent 2', parentPhone: '+1 (555) 987-6543', parentEmail: 'parent2@gmail.com', attendanceRate: 100 }
+        ]
+      });
+    }
+
+    setActiveClass(formattedClass);
+    setShowRegisterClassModal(false);
+    setNewClassName('');
+    setNewSubject('');
+    showToast(`✅ New Class Registered: ${formattedClass}! Assigned to ${user?.name || 'Teacher'}.`, 'success');
+  };
         const nowTime = status === 'Absent' ? '-' : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         return { ...s, status, time: nowTime };
       }
@@ -336,44 +368,80 @@ function TeacherAttendance({ activeClass, setActiveClass, user }) {
       )}
 
       {/* Header & Controls */}
-      <div className="glass-panel" style={{ padding: '1.5rem 2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="cyber-glowing-card" style={{ padding: '2rem 2.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.25rem' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <Fingerprint size={28} color="var(--accent-cyan)" />
-              <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '12px',
+                background: 'rgba(56, 189, 248, 0.15)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Fingerprint size={24} color="#38bdf8" />
+              </div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 900, color: '#ffffff', letterSpacing: '-0.4px' }}>
                 Biometric Attendance & Parent Notification System
               </h2>
             </div>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <span>Active Teaching Class:</span>
+            <div style={{ fontSize: '0.875rem', color: '#94a3b8', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 600 }}>Active Teaching Class:</span>
               <select
                 value={activeClass}
                 onChange={(e) => setActiveClass(e.target.value)}
                 className="glass-input"
-                style={{ width: '220px', padding: '0.3rem 0.75rem', fontSize: '0.85rem', fontWeight: 700 }}
+                style={{ width: '250px', padding: '0.4rem 0.85rem', fontSize: '0.875rem', fontWeight: 700, borderRadius: '10px', background: 'rgba(18, 20, 28, 0.95)', color: '#ffffff', borderColor: 'rgba(255, 255, 255, 0.2)' }}
               >
-                <option value="Grade 10-A (Mathematics)">Grade 10-A (Mathematics)</option>
-                <option value="Grade 10-B (Mathematics)">Grade 10-B (Mathematics)</option>
-                <option value="Grade 9-A (Physics)">Grade 9-A (Physics)</option>
-                <option value="Grade 11-A (Advanced Placement)">Grade 11-A (Advanced)</option>
+                {registeredClassesList.map((cls) => (
+                  <option key={cls} value={cls}>{cls}</option>
+                ))}
               </select>
+              <button
+                type="button"
+                onClick={() => setShowRegisterClassModal(true)}
+                style={{
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '8px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  color: '#ffffff',
+                  fontSize: '0.775rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem'
+                }}
+              >
+                + Register Class
+              </button>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
             {/* Batch Notify Absent Parents Button */}
             <button
               onClick={() => {
                 setModalSuccessMsg('');
                 setShowNotifyModal(true);
               }}
-              className="btn-primary"
               style={{
-                background: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)',
-                fontSize: '0.85rem',
-                padding: '0.75rem 1.25rem',
-                boxShadow: '0 4px 15px rgba(244, 63, 94, 0.35)'
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                color: '#ffffff',
+                border: 'none',
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                borderRadius: '12px',
+                padding: '0.75rem 1.35rem',
+                boxShadow: '0 4px 20px rgba(239, 68, 68, 0.4)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
               }}
             >
               <Smartphone size={18} />
@@ -381,33 +449,45 @@ function TeacherAttendance({ activeClass, setActiveClass, user }) {
             </button>
 
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <Calendar size={16} style={{ position: 'absolute', left: '0.75rem', color: 'var(--accent-cyan)', pointerEvents: 'none' }} />
+              <Calendar size={16} style={{ position: 'absolute', left: '0.85rem', color: '#38bdf8', pointerEvents: 'none' }} />
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="glass-input"
-                style={{ paddingLeft: '2.5rem', width: '160px', fontWeight: 600 }}
+                style={{ paddingLeft: '2.6rem', width: '165px', fontWeight: 700, borderRadius: '12px', height: '44px', background: 'rgba(15, 23, 42, 0.85)', color: '#fff' }}
               />
             </div>
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="btn-primary"
-              style={{ fontSize: '0.85rem', padding: '0.75rem 1.25rem' }}
+              style={{
+                background: 'linear-gradient(135deg, #3f3f46 0%, #27272a 100%)',
+                color: '#ffffff',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                fontSize: '0.875rem',
+                fontWeight: 700,
+                borderRadius: '12px',
+                padding: '0.75rem 1.35rem',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.5)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
             >
-              <UserPlus size={18} /> Register Student
+              <UserPlus size={18} color="#34d399" /> Register Student
             </button>
           </div>
         </div>
 
         {/* Search Bar */}
-        <div style={{ marginTop: '1.25rem', position: 'relative' }}>
-          <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-subtle)' }} />
+        <div style={{ marginTop: '1.5rem', position: 'relative' }}>
+          <Search size={18} style={{ position: 'absolute', left: '1.1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
           <input
             type="text"
             className="glass-input"
-            style={{ paddingLeft: '2.75rem' }}
+            style={{ paddingLeft: '2.9rem', height: '46px', borderRadius: '12px', fontSize: '0.925rem', background: 'rgba(15, 23, 42, 0.85)', color: '#fff' }}
             placeholder={`Search students or roll numbers in ${activeClass}...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -416,30 +496,30 @@ function TeacherAttendance({ activeClass, setActiveClass, user }) {
       </div>
 
       {/* Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-        <StatCard icon={CheckCircle2} label="Present Today" value={presentCount} color="var(--accent-emerald)" />
-        <StatCard icon={XCircle} label="Absent Today" value={absentCount} color="var(--accent-rose)" />
-        <StatCard icon={Clock} label="Late Arrival" value={lateCount} color="var(--accent-amber)" />
-        <StatCard icon={User} label="Total Enrolled" value={students.length} color="var(--accent-cyan)" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem' }}>
+        <StatCard icon={CheckCircle2} label="Present Today" value={presentCount} color="#34d399" />
+        <StatCard icon={XCircle} label="Absent Today" value={absentCount} color="#f87171" />
+        <StatCard icon={Clock} label="Late Arrival" value={lateCount} color="#fbbf24" />
+        <StatCard icon={User} label="Total Enrolled" value={students.length} color="#38bdf8" />
       </div>
 
-      {/* Student Roster Table */}
-      <div className="glass-panel" style={{ padding: '1.5rem', overflowX: 'auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+      {/* Student Roster Table Container */}
+      <div className="cyber-glowing-card" style={{ padding: '2rem', overflowX: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff' }}>
-              Class Attendance Roster: <span style={{ color: 'var(--accent-cyan)' }}>{activeClass}</span>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff' }}>
+              Class Attendance Roster: <span style={{ color: '#38bdf8' }}>{activeClass}</span>
             </h3>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+            <p style={{ fontSize: '0.825rem', color: '#94a3b8', marginTop: '0.25rem' }}>
               Date: {selectedDate} • Instant Biometric Verification & Parent Alerts
             </p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.85rem' }}>
-            <span style={{ color: '#fb7185', fontWeight: 700 }}>
+            <span style={{ color: '#f87171', fontWeight: 800, background: 'rgba(239, 68, 68, 0.12)', padding: '0.35rem 0.75rem', borderRadius: '9999px', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
               🔴 {absentCount} Absent
             </span>
-            <span style={{ color: 'var(--text-muted)' }}>
+            <span style={{ color: '#94a3b8', fontWeight: 600 }}>
               Total: {filteredStudents.length} Students
             </span>
           </div>
@@ -775,14 +855,66 @@ function TeacherAttendance({ activeClass, setActiveClass, user }) {
               </p>
             </div>
 
-            <button 
-              className="btn-secondary" 
-              style={{ width: '100%', marginTop: '0.5rem' }}
-              onClick={() => setActiveScanningStudent(null)}
-            >
-              Close Scanner
-            </button>
-          </div>
+      {/* Register New Class Modal */}
+      {showRegisterClassModal && (
+        <Modal title="Register New Class Section" onClose={() => setShowRegisterClassModal(false)}>
+          <form onSubmit={handleRegisterNewClass} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div>
+              <label style={{ fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
+                Class Section Name *
+              </label>
+              <input
+                type="text"
+                required
+                className="glass-input"
+                placeholder="e.g. Grade 12-A, Grade 9-C..."
+                value={newClassName}
+                onChange={(e) => setNewClassName(e.target.value)}
+                style={{ width: '100%', height: '42px', borderRadius: '10px' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
+                Subject / Topic *
+              </label>
+              <input
+                type="text"
+                required
+                className="glass-input"
+                placeholder="e.g. Computer Science, Algebra, Physics..."
+                value={newSubject}
+                onChange={(e) => setNewSubject(e.target.value)}
+                style={{ width: '100%', height: '42px', borderRadius: '10px' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setShowRegisterClassModal(false)}
+                style={{ flex: 1, height: '42px', borderRadius: '10px' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                style={{
+                  flex: 1,
+                  height: '42px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #3f3f46 0%, #27272a 100%)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  color: '#fff',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                Save Class
+              </button>
+            </div>
+          </form>
         </Modal>
       )}
     </div>
@@ -819,10 +951,22 @@ function StudentAttendance({ user }) {
 
 function StatCard({ icon: Icon, label, value, color }) {
   return (
-    <div className="glass-panel" style={{ padding: '1.25rem', textAlign: 'center' }}>
-      <Icon size={28} color={color} style={{ marginBottom: '0.5rem' }} />
-      <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', marginBottom: '0.25rem' }}>{value}</div>
-      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>{label}</div>
+    <div className="cyber-glowing-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+      <div style={{
+        width: '44px',
+        height: '44px',
+        borderRadius: '12px',
+        background: `${color}18`,
+        border: `1px solid ${color}35`,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '0.75rem'
+      }}>
+        <Icon size={24} color={color} />
+      </div>
+      <div style={{ fontSize: '2rem', fontWeight: 900, color: '#ffffff', marginBottom: '0.2rem', letterSpacing: '-0.5px' }}>{value}</div>
+      <div style={{ fontSize: '0.825rem', color: color, fontWeight: 700 }}>{label}</div>
     </div>
   );
 }

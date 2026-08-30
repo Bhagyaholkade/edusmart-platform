@@ -75,22 +75,66 @@ export default function Sidebar({ activeTab, setActiveTab, role }) {
   const tabs = getTabsByRole();
 
   return (
-    <aside className="app-sidebar-container glass-panel">
-      <nav className="app-sidebar-nav-horizontal">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`nav-tab-button ${activeTab === tab.id ? 'active' : ''}`}
-            >
-              <Icon size={18} />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </nav>
+    <aside style={{
+      width: '240px',
+      flexShrink: 0,
+      background: 'rgba(18, 20, 28, 0.88)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      borderRadius: '20px',
+      padding: '1.25rem 0.85rem',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0.4rem',
+      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.7)'
+    }}>
+      <div style={{
+        fontSize: '0.725rem',
+        fontWeight: 800,
+        color: '#64748b',
+        textTransform: 'uppercase',
+        letterSpacing: '1px',
+        padding: '0 0.85rem 0.6rem 0.85rem',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        marginBottom: '0.4rem'
+      }}>
+        Navigation Menu
+      </div>
+
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              width: '100%',
+              padding: '0.7rem 0.95rem',
+              borderRadius: '12px',
+              border: isActive ? '1px solid rgba(255, 255, 255, 0.25)' : '1px solid transparent',
+              background: isActive 
+                ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%)' 
+                : 'transparent',
+              color: isActive ? '#ffffff' : '#94a3b8',
+              fontWeight: isActive ? 800 : 600,
+              fontSize: '0.875rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              boxShadow: isActive ? '0 4px 18px rgba(0, 0, 0, 0.4)' : 'none',
+              textAlign: 'left'
+            }}
+          >
+            <Icon size={18} color={isActive ? '#f4f4f5' : '#64748b'} />
+            <span>{tab.label}</span>
+          </button>
+        );
+      })}
     </aside>
   );
 }

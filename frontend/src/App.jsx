@@ -62,7 +62,40 @@ export default function App() {
   const userRole = currentUser.role || 'student'; // 'platform_admin', 'school_admin', 'teacher', 'student'
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{
+      position: 'relative',
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      background: '#090a0f',
+      color: '#ffffff',
+      fontFamily: "'Plus Jakarta Sans', sans-serif"
+    }}>
+      {/* Background Cyber Grid & Ambient Charcoal Slate Glow Orbs */}
+      <div className="cyber-grid-bg" />
+      <div style={{
+        position: 'fixed',
+        top: '-10%',
+        left: '10%',
+        width: '500px',
+        height: '500px',
+        background: 'radial-gradient(circle, rgba(148, 163, 184, 0.08) 0%, transparent 70%)',
+        filter: 'blur(90px)',
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
+      <div style={{
+        position: 'fixed',
+        bottom: '-10%',
+        right: '10%',
+        width: '550px',
+        height: '550px',
+        background: 'radial-gradient(circle, rgba(99, 102, 241, 0.07) 0%, transparent 70%)',
+        filter: 'blur(95px)',
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
+
       <Header
         user={currentUser}
         role={userRole}
@@ -95,7 +128,7 @@ export default function App() {
           )}
 
           {activeTab === 'profile' && (
-            <ProfileView role={userRole} user={currentUser} />
+            <ProfileView role={userRole} user={currentUser} setActiveTab={setActiveTab} />
           )}
 
           {/* Platform Admin & School Admin Shared / Specific Views */}
