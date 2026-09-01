@@ -1,24 +1,56 @@
 // API Base URL Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+// Maps raw backend/Supabase error text to a clean user-facing message
+function friendlyAuthError(rawDetail, status) {
+  if (!rawDetail) {
+    if (status === 401 || status === 400) return 'Invalid email or password.';
+    if (status === 422) return 'Please check the information you entered.';
+    if (status === 429) return 'Too many attempts. Please wait a moment and try again.';
+    if (status >= 500) return 'Server error. Please try again shortly.';
+    return 'Something went wrong. Please try again.';
+  }
+
+  const detail = typeof rawDetail === 'string' ? rawDetail : JSON.stringify(rawDetail);
+
+  if (/invalid.*(login|credentials|password|email)/i.test(detail)) return 'Invalid email or password.';
+  if (/email.*not.*confirmed/i.test(detail)) return 'Please confirm your email address before signing in.';
+  if (/user.*already.*exists|already.*registered/i.test(detail)) return 'An account with this email already exists. Try logging in instead.';
+  if (/password.*too.*short|weak.*password/i.test(detail)) return 'Password is too short. Use at least 6 characters.';
+  if (/invalid.*email/i.test(detail)) return 'Please enter a valid email address.';
+  if (/rate.*limit|too.*many.*requests/i.test(detail)) return 'Too many attempts. Please wait a moment and try again.';
+
+  // Strip JSON noise from the detail string before showing
+  return detail.replace(/[{}"\\]/g, '').replace(/detail:/i, '').trim();
+}
+
 // Helper function for API calls
 async function apiCall(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
+
+  let response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  } catch (_networkErr) {
+    throw new Error('Cannot reach the server. Check your connection and make sure the backend is running.');
+  }
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || 'API request failed');
+    // FastAPI returns errors as { detail: "..." } or { detail: [{...}] }
+    const body = await response.json().catch(() => ({}));
+    const rawDetail = body.detail ?? body.message ?? null;
+    throw new Error(friendlyAuthError(rawDetail, response.status));
   }
 
   return response.json();
 }
+
 
 // Authentication API
 export const authAPI = {
