@@ -155,20 +155,6 @@ function TeacherAttendance({ activeClass, setActiveClass, teacherClasses, user }
     setNewSubject('');
     showToast(`✅ New Class Registered: ${formattedClass}! Assigned to ${user?.name || 'Teacher'}.`, 'success');
   };
-        const nowTime = status === 'Absent' ? '-' : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        return { ...s, status, time: nowTime };
-      }
-      return s;
-    });
-    setStudents(updated);
-
-    const studentObj = students.find(s => s.id === studentId);
-    if (status === 'Absent' && studentObj) {
-      showToast(`Student marked ABSENT. Parent notification ready for ${studentObj.parentName} (${studentObj.parentPhone})`, 'info');
-    } else if (status === 'Present') {
-      showToast(`Attendance marked PRESENT for ${studentObj?.name}`, 'success');
-    }
-  };
 
   const filteredStudents = students.filter(s =>
     s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -854,6 +840,9 @@ function TeacherAttendance({ activeClass, setActiveClass, teacherClasses, user }
                 Student: <strong style={{ color: '#fff' }}>{activeScanningStudent.name}</strong> (Roll #{activeScanningStudent.rollNumber})
               </p>
             </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Register New Class Modal */}
       {showRegisterClassModal && (
