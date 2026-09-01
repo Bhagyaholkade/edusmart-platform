@@ -23,16 +23,31 @@ async function apiCall(endpoint, options = {}) {
 // Authentication API
 export const authAPI = {
   login: async (credentials) => {
+    const formData = new URLSearchParams();
+    formData.append('username', credentials.email || credentials.username);
+    formData.append('password', credentials.password);
+    
     return apiCall('/auth/login', {
       method: 'POST',
-      body: JSON.stringify(credentials),
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString(),
     });
   },
 
   register: async (userData) => {
-    return apiCall('/auth/register', {
+    const formData = new URLSearchParams();
+    formData.append('username', userData.email);
+    formData.append('password', userData.password);
+    // Include other details if backend starts supporting them
+    
+    return apiCall('/auth/signup', {
       method: 'POST',
-      body: JSON.stringify(userData),
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString(),
     });
   },
 
