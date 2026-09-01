@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { authAPI } from '../../services/api';
-import { 
-  LogIn, 
-  KeyRound, 
-  Mail, 
-  Sparkles, 
-  AlertCircle, 
-  CheckCircle2, 
-  Zap, 
-  Brain, 
-  BookOpen, 
+import {
+  LogIn,
+  KeyRound,
+  Mail,
+  Sparkles,
+  AlertCircle,
+  CheckCircle2,
+  Zap,
+  Brain,
+  BookOpen,
   Award,
   Eye,
   EyeOff,
@@ -81,7 +81,7 @@ export default function Login({ onLoginSuccess, onNavigate }) {
 
     setTimeout(() => {
       setResetLoading(false);
-      setResetSuccess(`A secure reset link & AI OTP token have been dispatched to ${resetEmail}`);
+      setResetSuccess(`A secure reset link & OTP have been dispatched to ${resetEmail}`);
     }, 900);
   };
 
@@ -312,25 +312,25 @@ export default function Login({ onLoginSuccess, onNavigate }) {
               gridTemplateColumns: '1fr 1fr',
               gap: '1.25rem'
             }}>
-              <CyberFeatureCard 
+              <CyberFeatureCard
                 icon={Brain}
                 color="#6366f1"
                 title="AI Tutor & Copilot"
                 desc="Voice & text conversational learning powered by RAG"
               />
-              <CyberFeatureCard 
+              <CyberFeatureCard
                 icon={Zap}
                 color="#06b6d4"
                 title="Real-time Analytics"
                 desc="Instant class performance tracking & student insights"
               />
-              <CyberFeatureCard 
+              <CyberFeatureCard
                 icon={BookOpen}
                 color="#a855f7"
                 title="Curriculum Grounding"
                 desc="DokGuru AI mapped directly to official syllabi"
               />
-              <CyberFeatureCard 
+              <CyberFeatureCard
                 icon={Award}
                 color="#34d399"
                 title="Auto Assessment"
@@ -424,13 +424,13 @@ export default function Login({ onLoginSuccess, onNavigate }) {
                   </div>
                 </div>
 
-                <ChevronDown 
-                  size={18} 
-                  color="#94a3b8" 
+                <ChevronDown
+                  size={18}
+                  color="#94a3b8"
                   style={{
                     transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                     transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }} 
+                  }}
                 />
               </button>
 
