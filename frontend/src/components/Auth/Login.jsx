@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { authAPI } from '../../services/api';
 import { 
   LogIn, 
   KeyRound, 
@@ -93,42 +94,26 @@ export default function Login({ onLoginSuccess, onNavigate }) {
     setLoading(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const response = await authAPI.login({ email, password });
 
-      const isTeacherRole = selectedRole === 'teacher' || email.includes('teacher');
-      const isStudentRole = selectedRole === 'student' || email.includes('student');
-      const isPrincipal = selectedRole === 'school_admin' || email.includes('principal');
-      const isPlatformAdmin = selectedRole === 'platform_admin' || email.includes('admin@platform');
-
-      const mockResponse = {
-        user: {
-          id: Date.now(),
-          email: email,
-          name: isPlatformAdmin ? 'System Admin' :
-                isPrincipal ? 'Dr. Sarah Vance' :
-                isStudentRole ? 'Jordan Smith' : 'Prof. Alex Rivera',
-          role: isPlatformAdmin ? 'platform_admin' :
-                isPrincipal ? 'school_admin' :
-                isStudentRole ? 'student' : 'teacher',
-          schoolId: isPlatformAdmin ? null : 'school_123',
-          status: 'active',
-          subjectsTaught: isTeacherRole ? ['Mathematics', 'Physics', 'Computer Science'] : undefined,
-          assignedClasses: isTeacherRole ? [
-            'Grade 10-A (Mathematics)',
-            'Grade 10-B (Mathematics)',
-            'Grade 10-B (Physics)',
-            'Grade 9-A (Physics)',
-            'Grade 11-A (Computer Science)',
-            'Grade 12-A (Advanced Calculus)'
-          ] : undefined,
-          schoolName: isPlatformAdmin ? undefined : 'Oakridge AI Academy'
-        },
-        token: 'mock_jwt_token'
+      const userData = {
+        id: response.user_id,
+        email: email,
+        name: email.split('@')[0],
+        role: response.role,
+        schoolId: 'school_123',
+        status: 'active',
+        subjectsTaught: ['Mathematics'],
+        assignedClasses: ['Grade 10-A (Mathematics)'],
+        schoolName: 'Oakridge AI Academy'
       };
+
+      // In a real app we'd store the token
+      localStorage.setItem('token', response.access_token);
 
       setSuccess('Authentication successful! Directing to portal...');
       setTimeout(() => {
-        onLoginSuccess(mockResponse.user);
+        onLoginSuccess(userData);
       }, 500);
     } catch (err) {
       setError(err.message || 'Invalid email or password');
