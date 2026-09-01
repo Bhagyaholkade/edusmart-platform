@@ -15,6 +15,7 @@ import {
   ChevronRight,
   School
 } from 'lucide-react';
+import { authAPI } from '../../services/api';
 
 export default function Register({ onLoginSuccess, onNavigate }) {
   const [name, setName] = useState('');
@@ -22,17 +23,45 @@ export default function Register({ onLoginSuccess, onNavigate }) {
   const [school, setSchool] = useState('');
   const [role, setRole] = useState('School Administrator');
   const [studentCount, setStudentCount] = useState('500 - 2,000');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const response = await authAPI.register({
+        email,
+        password,
+        name,
+        school,
+        role
+      });
+      
+      localStorage.setItem('token', response.access_token);
+      
+      const userData = {
+        id: response.user_id,
+        email: email,
+        name: name,
+        role: response.role || role,
+        schoolName: school,
+      };
+
       setSubmitted(true);
-    }, 900);
+      setTimeout(() => {
+        onLoginSuccess(userData);
+      }, 1500);
+    } catch (err) {
+      setError(err.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -282,13 +311,18 @@ export default function Register({ onLoginSuccess, onNavigate }) {
               <div>
                 <div style={{ marginBottom: '1.5rem' }}>
                   <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.3px', marginBottom: '0.35rem' }}>
-                    Institutional Access Application
+                    Request Platform Access
                   </h2>
                   <p style={{ fontSize: '0.875rem', color: '#94a3b8' }}>
-                    Fill in your official details to request campus deployment
+                    Join 400+ leading institutions using EduSmart AI
                   </p>
                 </div>
-
+                {error && (
+                  <div style={{ color: '#f87171', background: 'rgba(239, 68, 68, 0.12)', padding: '0.85rem', borderRadius: '12px', marginBottom: '1rem', fontSize: '0.85rem' }}>
+                    {error}
+                  </div>
+                )}
+                
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.825rem', fontWeight: 600, color: '#cbd5e1', marginBottom: '0.45rem' }}>
@@ -356,6 +390,8 @@ export default function Register({ onLoginSuccess, onNavigate }) {
                         className="glass-input"
                         style={{ paddingLeft: '2.8rem', height: '46px', borderRadius: '12px', background: 'rgba(18, 20, 28, 0.9)', borderColor: 'rgba(255, 255, 255, 0.1)' }}
                         placeholder="Create secure password (e.g. teacher123)"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                       />
                     </div>
                   </div>
