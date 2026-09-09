@@ -32,10 +32,10 @@ Based on the V1 MVP Requirements for the EduSmart AI Learning Intelligence Platf
   - [x] Implement marks ingestion and validation
   - [x] Build aggregation logic (class averages, highest/lowest)
 
-- [ ] **Feature 6: Student Intelligence & Risk Signals**
-  - [ ] Implement Concept Mastery calculations
-  - [ ] Implement Risk Signal generation (attendance drops, grade drops)
-  - [ ] Build the Student Learning Profile endpoint
+- [x] **Feature 6: Student Intelligence & Risk Signals**
+  - [x] Implement Concept Mastery calculations
+  - [x] Implement Risk Signal generation (attendance drops, grade drops)
+  - [x] Build the Student Learning Profile endpoint
 
 - [ ] **Feature 7: AI Integration (DokGuru)**
   - [ ] Complete AI Tutor endpoint with PII sanitization

@@ -1,44 +1,45 @@
 from datetime import date
 from typing import List, Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from fastapi import HTTPException
 
 from app.models.attendance import AttendanceRecord
-from app.models.user import User
 from app.models.school import ClassRoom
-from app.schemas.attendance import AttendanceCreate, AttendanceBulkCreate, AttendanceUpdate
+from app.schemas.attendance import AttendanceBulkCreate, AttendanceUpdate
 
 
-def _verify_class_exists(db: Session, class_id: int):
-    classroom = db.query(ClassRoom).filter(ClassRoom.id == class_id).first()
+async def _verify_class_exists(db: AsyncSession, class_id: int) -> ClassRoom:
+    result = await db.execute(select(ClassRoom).where(ClassRoom.id == class_id))
+    classroom = result.scalars().first()
     if not classroom:
         raise HTTPException(status_code=404, detail="Class not found")
     return classroom
 
 
-def mark_bulk_attendance(
-    db: Session,
+async def mark_bulk_attendance(
+    db: AsyncSession,
     bulk_data: AttendanceBulkCreate,
     teacher_id: str,
 ) -> List[AttendanceRecord]:
     """
     Upsert attendance for all students in the payload.
     If a record already exists for (student, class, date), update it.
-    This is how teachers mark a full class-register in one go.
+    Teachers submit the full class register in one go.
     """
-    _verify_class_exists(db, bulk_data.class_id)
+    await _verify_class_exists(db, bulk_data.class_id)
 
     results = []
     for record in bulk_data.records:
-        existing = (
-            db.query(AttendanceRecord)
-            .filter(
+        existing_result = await db.execute(
+            select(AttendanceRecord).where(
                 AttendanceRecord.student_id == record.student_id,
                 AttendanceRecord.class_id == bulk_data.class_id,
                 AttendanceRecord.date == bulk_data.date,
             )
-            .first()
         )
+        existing = existing_result.scalars().first()
+
         if existing:
             existing.status = record.status
             existing.remarks = record.remarks
@@ -56,62 +57,59 @@ def mark_bulk_attendance(
             db.add(new_record)
             results.append(new_record)
 
-    db.commit()
+    await db.commit()
     for r in results:
-        db.refresh(r)
+        await db.refresh(r)
     return results
 
 
-def get_class_attendance(
-    db: Session,
+async def get_class_attendance(
+    db: AsyncSession,
     class_id: int,
     attendance_date: date,
 ) -> List[AttendanceRecord]:
-    """Teacher view: all student records for a class on a given date."""
-    _verify_class_exists(db, class_id)
-    return (
-        db.query(AttendanceRecord)
-        .filter(
+    await _verify_class_exists(db, class_id)
+    result = await db.execute(
+        select(AttendanceRecord).where(
             AttendanceRecord.class_id == class_id,
             AttendanceRecord.date == attendance_date,
         )
-        .all()
     )
+    return result.scalars().all()
 
 
-def get_student_attendance(
-    db: Session,
+async def get_student_attendance(
+    db: AsyncSession,
     student_id: str,
     class_id: Optional[int] = None,
     from_date: Optional[date] = None,
     to_date: Optional[date] = None,
 ) -> List[AttendanceRecord]:
-    """Student/Parent view: attendance records for a specific student."""
-    query = db.query(AttendanceRecord).filter(
-        AttendanceRecord.student_id == student_id
-    )
+    query = select(AttendanceRecord).where(AttendanceRecord.student_id == student_id)
     if class_id:
-        query = query.filter(AttendanceRecord.class_id == class_id)
+        query = query.where(AttendanceRecord.class_id == class_id)
     if from_date:
-        query = query.filter(AttendanceRecord.date >= from_date)
+        query = query.where(AttendanceRecord.date >= from_date)
     if to_date:
-        query = query.filter(AttendanceRecord.date <= to_date)
-    return query.order_by(AttendanceRecord.date.desc()).all()
+        query = query.where(AttendanceRecord.date <= to_date)
+    query = query.order_by(AttendanceRecord.date.desc())
+    result = await db.execute(query)
+    return result.scalars().all()
 
 
-def update_attendance_record(
-    db: Session,
+async def update_attendance_record(
+    db: AsyncSession,
     record_id: int,
     teacher_id: str,
     update_data: AttendanceUpdate,
 ) -> AttendanceRecord:
-    """Update a single attendance record (correction by teacher)."""
-    record = db.query(AttendanceRecord).filter(AttendanceRecord.id == record_id).first()
+    result = await db.execute(select(AttendanceRecord).where(AttendanceRecord.id == record_id))
+    record = result.scalars().first()
     if not record:
         raise HTTPException(status_code=404, detail="Attendance record not found")
     record.status = update_data.status
     record.remarks = update_data.remarks
     record.recorded_by = teacher_id
-    db.commit()
-    db.refresh(record)
+    await db.commit()
+    await db.refresh(record)
     return record
