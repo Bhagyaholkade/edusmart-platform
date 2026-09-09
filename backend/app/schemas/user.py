@@ -23,6 +23,7 @@ class UserUpdate(UserBase):
 class UserInDBBase(UserBase):
     id: str
     is_active: bool = True
+    is_approved: bool = False
     created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
@@ -30,3 +31,25 @@ class UserInDBBase(UserBase):
 
 class User(UserInDBBase):
     pass
+
+class UserResponse(UserInDBBase):
+    pass
+
+class UserApprove(BaseModel):
+    role: str
+    school_id: Optional[int] = None
+    is_approved: bool = True
+
+class TeacherAssignmentBase(BaseModel):
+    class_id: int
+    subject_id: int
+
+class TeacherAssignmentResponse(TeacherAssignmentBase):
+    id: int
+    teacher_id: str
+    
+    model_config = {"from_attributes": True}
+
+class ParentStudentLink(BaseModel):
+    parent_id: str
+    student_id: str

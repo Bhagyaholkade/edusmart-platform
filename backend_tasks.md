@@ -17,10 +17,10 @@ Based on the V1 MVP Requirements for the EduSmart AI Learning Intelligence Platf
   - [x] Implement CRUD for Classes & Sections
   - [x] Implement Subjects assignment
 
-- [ ] **Feature 3: User Management**
-  - [ ] Implement Teacher creation and assignment to classes
-  - [ ] Implement Student enrollment and profile management
-  - [ ] Implement Parent profiles linking to students
+- [x] **Feature 3: User Management**
+  - [x] Implement Teacher creation and assignment to classes
+  - [x] Implement Student enrollment and profile management
+  - [x] Implement Parent profiles linking to students
 
 - [ ] **Feature 4: Attendance Engine**
   - [ ] Implement daily attendance tracking endpoint
