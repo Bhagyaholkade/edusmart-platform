@@ -27,10 +27,10 @@ Based on the V1 MVP Requirements for the EduSmart AI Learning Intelligence Platf
   - [x] Implement bulk attendance submission
   - [x] (Optional) Integrate biometric data simulation
 
-- [ ] **Feature 5: Assessment & Marks Pipeline**
-  - [ ] Implement Assessment creation (Quizzes, Exams)
-  - [ ] Implement marks ingestion and validation
-  - [ ] Build aggregation logic (class averages, highest/lowest)
+- [x] **Feature 5: Assessment & Marks Pipeline**
+  - [x] Implement Assessment creation (Quizzes, Exams)
+  - [x] Implement marks ingestion and validation
+  - [x] Build aggregation logic (class averages, highest/lowest)
 
 - [ ] **Feature 6: Student Intelligence & Risk Signals**
   - [ ] Implement Concept Mastery calculations
