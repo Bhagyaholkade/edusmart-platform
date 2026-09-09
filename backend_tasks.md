@@ -12,10 +12,10 @@ Based on the V1 MVP Requirements for the EduSmart AI Learning Intelligence Platf
   - [x] Complete JWT login logic with database validation
   - [x] Implement RBAC middleware/dependency for protecting routes
 
-- [ ] **Feature 2: School & Academic Hierarchy**
-  - [ ] Implement CRUD for Schools
-  - [ ] Implement CRUD for Classes & Sections
-  - [ ] Implement Subjects assignment
+- [x] **Feature 2: School & Academic Hierarchy**
+  - [x] Implement CRUD for Schools
+  - [x] Implement CRUD for Classes & Sections
+  - [x] Implement Subjects assignment
 
 - [ ] **Feature 3: User Management**
   - [ ] Implement Teacher creation and assignment to classes
