@@ -1,4 +1,5 @@
 import React from 'react';
+import logoImg from '../../images/logo-img.png';
 import { LogOut, Sparkles, GraduationCap, BookOpen, Shield, School, Activity, Brain } from 'lucide-react';
 
 export default function Header({ user, role, onLogout }) {
@@ -38,19 +39,16 @@ export default function Header({ user, role, onLogout }) {
       borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <div style={{
-          width: '44px',
-          height: '44px',
-          borderRadius: '14px',
-          background: 'linear-gradient(135deg, #3f3f46 0%, #18181b 100%)',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.5)'
-        }}>
-          <Brain size={24} color="#f4f4f5" />
-        </div>
+        <img 
+          src={logoImg} 
+          alt="EduSmart Logo" 
+          style={{
+            height: '40px',
+            width: 'auto',
+            objectFit: 'contain',
+            borderRadius: '8px'
+          }} 
+        />
         <div>
           <div style={{ fontSize: '1.3rem', fontWeight: 900, letterSpacing: '-0.3px', color: '#ffffff' }}>
             EduSmart<span style={{ color: '#38bdf8' }}>.AI</span>

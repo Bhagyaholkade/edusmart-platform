@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logoImg from '../../images/logo-img.png';
 import { 
   UserPlus, 
   Sparkles, 
@@ -111,23 +112,21 @@ export default function Register({ onLoginSuccess, onNavigate }) {
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #10b981 0%, #6366f1 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
-          }}>
-            <Brain size={24} color="#ffffff" />
-          </div>
+          <img 
+            src={logoImg} 
+            alt="EduSmart Logo" 
+            style={{
+              height: '42px',
+              width: 'auto',
+              objectFit: 'contain',
+              borderRadius: '10px'
+            }} 
+          />
           <div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.3px', background: 'linear-gradient(135deg, #fff 0%, #cbd5e1 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              EduSmart<span style={{ color: '#34d399' }}>.AI</span>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.3px', color: '#ffffff' }}>
+              EduSmart <span className="text-gradient-cyan">AI</span>
             </div>
-            <div style={{ fontSize: '0.725rem', color: '#64748b', fontWeight: 600 }}>Institutional Portal Registration</div>
+            <div style={{ fontSize: '0.725rem', color: '#94a3b8', fontWeight: 600 }}>Institutional Portal Registration</div>
           </div>
         </div>
 

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import WelcomeScreen from './components/Landing/WelcomeScreen';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import ForgotPassword from './components/Auth/ForgotPassword';
 import Header from './components/Dashboard/Header';
 import Sidebar from './components/Dashboard/Sidebar';
 import Overview from './components/Dashboard/Overview';
@@ -22,6 +24,7 @@ import TeachersManagement from './components/Admin/SchoolAdmin/TeachersManagemen
 import StudentsManagement from './components/Admin/SchoolAdmin/StudentsManagement';
 
 export default function App() {
+  const [showWelcome, setShowWelcome] = useState(true);
   const [authView, setAuthView] = useState('login');
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('edusmart_user');
@@ -46,14 +49,23 @@ export default function App() {
   const handleLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem('edusmart_user');
+    localStorage.removeItem('edusmart_token');
     setAuthView('login');
     setActiveTab('overview');
   };
+
+  // Show welcome screen first
+  if (showWelcome && !currentUser) {
+    return <WelcomeScreen onGetStarted={() => setShowWelcome(false)} />;
+  }
 
   // If user is not logged in, show authentication
   if (!currentUser) {
     if (authView === 'register') {
       return <Register onLoginSuccess={handleLoginSuccess} onNavigate={setAuthView} />;
+    }
+    if (authView === 'forgot-password') {
+      return <ForgotPassword onNavigate={setAuthView} />;
     }
     return <Login onLoginSuccess={handleLoginSuccess} onNavigate={setAuthView} />;
   }

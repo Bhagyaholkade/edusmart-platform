@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import logoImg from '../../images/logo-img.png';
 import { authAPI } from '../../services/api';
 import {
   LogIn,
@@ -179,21 +180,19 @@ export default function Login({ onLoginSuccess, onNavigate }) {
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(99, 102, 241, 0.5)'
-          }}>
-            <Brain size={24} color="#ffffff" />
-          </div>
+          <img 
+            src={logoImg} 
+            alt="EduSmart Logo" 
+            style={{
+              height: '42px',
+              width: 'auto',
+              objectFit: 'contain',
+              borderRadius: '10px'
+            }} 
+          />
           <div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 900, letterSpacing: '-0.3px', color: '#ffffff' }}>
-              EduSmart<span style={{ color: '#38bdf8' }}>.AI</span>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.3px', color: '#ffffff' }}>
+              EduSmart <span className="text-gradient-cyan">AI</span>
             </div>
             <div style={{ fontSize: '0.725rem', color: '#94a3b8', fontWeight: 600 }}>Intelligence Platform v2.4</div>
           </div>
@@ -281,17 +280,14 @@ export default function Login({ onLoginSuccess, onNavigate }) {
 
               <h1 style={{
                 fontSize: '3.25rem',
-                fontWeight: 900,
+                fontWeight: 800,
                 lineHeight: 1.15,
                 letterSpacing: '-1px',
-                marginBottom: '1.25rem'
+                marginBottom: '1.25rem',
+                fontFamily: "'Outfit', 'Inter', sans-serif"
               }}>
                 Empowering Schools with{' '}
-                <span style={{
-                  background: 'linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
+                <span className="text-gradient-cyan">
                   Ambient AI
                 </span> Intelligence
               </h1>
