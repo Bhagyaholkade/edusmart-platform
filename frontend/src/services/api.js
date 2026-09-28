@@ -419,11 +419,11 @@ export const assessmentAPI = {
       });
     } catch (err) {
       if (err.message === 'NETWORK_OFFLINE') {
-        return payload.results.map((r, idx) => ({
+        return payload.marks.map((r, idx) => ({
           id: Date.now() + idx,
           assessment_id: assessmentId,
           student_id: r.student_id,
-          marks_obtained: r.marks_obtained,
+          score: r.score,
           remarks: r.remarks || null,
         }));
       }
@@ -479,12 +479,12 @@ export const intelligenceAPI = {
     } catch (err) {
       if (err.message === 'NETWORK_OFFLINE') {
         return {
+          id: 1,
           student_id: studentId,
-          academic_health_score: 92.5,
-          concept_mastery: { Mathematics: 0.94, Physics: 0.88, Chemistry: 0.91 },
-          risk_level: 'LOW',
-          strengths: ['Calculus Differentiation', 'Optics Wave Theory'],
-          recommended_next_steps: ['Practice 5 advanced questions on Wave Interference'],
+          overall_health_score: 92.5,
+          strengths: ['Mathematics', 'Physics', 'Calculus Differentiation', 'Optics Wave Theory'],
+          weaknesses: ['Chemistry', 'History'],
+          updated_at: new Date().toISOString()
         };
       }
       throw err;
@@ -523,19 +523,109 @@ export const intelligenceAPI = {
     } catch (err) {
       if (err.message === 'NETWORK_OFFLINE') {
         return {
-          student_id: studentId,
-          health_score: 92.5,
-          attendance_percentage: 98.2,
-          recent_grades: [
-            { subject: 'Mathematics', score: 94 },
-            { subject: 'Physics', score: 88 },
-          ],
-          active_risks: [],
+          profile: {
+            id: 1,
+            student_id: studentId,
+            overall_health_score: 92.5,
+            strengths: ['Mathematics', 'Physics'],
+            weaknesses: ['History'],
+            updated_at: new Date().toISOString()
+          },
+          active_risk_signals: [],
+          attendance_rate: 98.2,
+          average_score: 91.0
         };
       }
       throw err;
     }
   },
+};
+
+// --- Analytics API ---
+export const analyticsAPI = {
+  getSchoolAnalytics: async (schoolId) => {
+    try {
+      return await apiCall(`/analytics/school/${schoolId}`);
+    } catch (err) {
+      if (err.message === 'NETWORK_OFFLINE') {
+        return {
+          school_id: schoolId,
+          school_name: 'Mock School',
+          total_students: 1200,
+          total_teachers: 85,
+          total_classes: 30,
+          overall_attendance_rate_pct: 95.5,
+          overall_average_score_pct: 82.3,
+          active_risk_signals: 15,
+          classes: [
+            { class_id: 1, grade_level: 'Grade 10', section: 'A', total_students: 35, average_health_score: 88, attendance_rate_pct: 94, average_score_pct: 85 },
+            { class_id: 2, grade_level: 'Grade 10', section: 'B', total_students: 30, average_health_score: 85, attendance_rate_pct: 92, average_score_pct: 80 },
+          ],
+          top_subjects: [
+            { subject_id: 1, subject_name: 'Mathematics', average_score_pct: 88, pass_rate_pct: 95, total_assessments: 10 },
+            { subject_id: 2, subject_name: 'Physics', average_score_pct: 85, pass_rate_pct: 92, total_assessments: 8 },
+          ]
+        };
+      }
+      throw err;
+    }
+  },
+
+  getTeacherClassAnalytics: async (classId) => {
+    try {
+      return await apiCall(`/analytics/teacher/class/${classId}`);
+    } catch (err) {
+      if (err.message === 'NETWORK_OFFLINE') {
+        return {
+          teacher_id: 't_mock',
+          class_id: classId,
+          grade_level: 'Grade 10',
+          section: 'A',
+          total_students: 35,
+          class_attendance_rate_pct: 94.2,
+          class_average_score_pct: 85.5,
+          pass_rate_pct: 92.0,
+          at_risk_student_count: 3,
+          subject_performance: [
+            { subject_id: 1, subject_name: 'Mathematics', average_score_pct: 88, pass_rate_pct: 95, total_assessments: 10 },
+            { subject_id: 2, subject_name: 'Physics', average_score_pct: 85, pass_rate_pct: 92, total_assessments: 8 },
+          ],
+          student_summaries: [
+            { student_id: 's_mock1', full_name: 'Alex Johnson', health_score: 92.5, attendance_rate_pct: 98, average_score_pct: 91, active_risk_count: 0 },
+            { student_id: 's_mock2', full_name: 'Sarah Williams', health_score: 75.0, attendance_rate_pct: 82, average_score_pct: 70, active_risk_count: 1 },
+          ]
+        };
+      }
+      throw err;
+    }
+  },
+
+  getStudentAnalytics: async (studentId) => {
+    try {
+      return await apiCall(`/analytics/student/${studentId}`);
+    } catch (err) {
+      if (err.message === 'NETWORK_OFFLINE') {
+        return {
+          student_id: studentId,
+          full_name: 'Alex Johnson',
+          grade_level: 'Grade 10',
+          section: 'A',
+          overall_health_score: 92.5,
+          attendance: { total_records: 30, present_count: 28, attendance_rate_pct: 93.3 },
+          average_score_pct: 91.0,
+          risk_summary: { total_active_signals: 0, high_severity: 0, medium_severity: 0, low_severity: 0 },
+          subject_performance: [
+            { subject_id: 1, subject_name: 'Mathematics', average_score_pct: 94, pass_rate_pct: 100, total_assessments: 5 },
+            { subject_id: 2, subject_name: 'Physics', average_score_pct: 88, pass_rate_pct: 100, total_assessments: 4 },
+          ],
+          recent_results: [
+            { assessment_id: 1, assessment_title: 'Math Midterm', assessment_type: 'EXAM', subject_name: 'Mathematics', score: 94, max_score: 100, score_pct: 94, scheduled_date: '2026-09-01' },
+          ]
+        };
+      }
+      throw err;
+    }
+  }
 };
 
 export default {
@@ -545,4 +635,5 @@ export default {
   attendanceAPI,
   assessmentAPI,
   intelligenceAPI,
+  analyticsAPI,
 };

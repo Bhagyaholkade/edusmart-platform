@@ -15,6 +15,7 @@ import Toast from './components/Common/Toast';
 import SchoolsManagement from './components/Admin/SchoolsManagement';
 import UsersManagement from './components/Admin/UsersManagement';
 import UsageAnalytics from './components/Admin/UsageAnalytics';
+import AcademicAnalytics from './components/Analytics/AcademicAnalytics';
 import AIRagManagement from './components/Admin/AIRagManagement';
 import SystemLogs from './components/Admin/SystemLogs';
 import PlatformSettings from './components/Admin/PlatformSettings';
@@ -152,12 +153,12 @@ export default function App() {
             <UsersManagement showToast={showToast} />
           )}
 
-          {(userRole === 'platform_admin' || userRole === 'school_admin') && activeTab === 'usage' && (
+          {userRole === 'platform_admin' && activeTab === 'usage' && (
             <UsageAnalytics showToast={showToast} />
           )}
 
-          {(userRole === 'platform_admin' || userRole === 'school_admin') && activeTab === 'analytics' && (
-            <UsageAnalytics showToast={showToast} />
+          {userRole !== 'platform_admin' && activeTab === 'analytics' && (
+            <AcademicAnalytics role={userRole} user={currentUser} showToast={showToast} />
           )}
 
           {(userRole === 'platform_admin' || userRole === 'school_admin') && activeTab === 'ai-rag' && (

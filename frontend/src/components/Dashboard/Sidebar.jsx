@@ -38,6 +38,7 @@ export default function Sidebar({ activeTab, setActiveTab, role }) {
     { id: 'students', label: 'Students', icon: Users },
     { id: 'assessments', label: 'Assessments', icon: Award },
     { id: 'attendance', label: 'Attendance', icon: Calendar },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'interventions', label: 'Interventions', icon: AlertCircle },
     { id: 'ai-copilot', label: 'AI Copilot', icon: Sparkles },
     { id: 'knowledge-base', label: 'Materials', icon: Database },
@@ -52,6 +53,7 @@ export default function Sidebar({ activeTab, setActiveTab, role }) {
     { id: 'practice', label: 'Practice', icon: Award },
     { id: 'assessments', label: 'Assessments', icon: FileText },
     { id: 'attendance', label: 'Attendance', icon: Calendar },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'progress', label: 'Progress', icon: TrendingUp },
     { id: 'profile', label: 'Profile', icon: User },
   ];
