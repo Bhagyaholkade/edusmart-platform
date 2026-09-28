@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Lenis from 'lenis';
 import WelcomeScreen from './components/Landing/WelcomeScreen';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
@@ -33,6 +34,31 @@ export default function App() {
   });
   const [activeTab, setActiveTab] = useState('overview');
   const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      smoothTouch: false,
+      touchMultiplier: 2,
+      infinite: false,
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
+  }, []);
 
   const showToast = (message, type = 'info') => {
     setToast({ message, type });
