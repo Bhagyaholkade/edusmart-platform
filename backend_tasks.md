@@ -37,12 +37,12 @@ Based on the V1 MVP Requirements for the EduSmart AI Learning Intelligence Platf
   - [x] Implement Risk Signal generation (attendance drops, grade drops)
   - [x] Build the Student Learning Profile endpoint
 
-- [ ] **Feature 7: AI Integration (DokGuru)**
+- [ ] **Feature 7: AI Integration (DokGuru)** *(on hold)*
   - [ ] Complete AI Tutor endpoint with PII sanitization
   - [ ] Complete Teacher Copilot endpoint for generating lesson plans/feedback
   - [ ] Setup Knowledge Base / Document Store logic
 
-- [ ] **Feature 8: Analytics & Dashboards**
-  - [ ] Implement School Admin analytics (overall performance, attendance)
-  - [ ] Implement Teacher analytics (class-wide insights)
-  - [ ] Implement Student/Parent analytics (personal progress)
+- [x] **Feature 8: Analytics & Dashboards**
+  - [x] Implement School Admin analytics (overall performance, attendance, class breakdown, top subjects)
+  - [x] Implement Teacher analytics (class-wide insights, per-student summaries, subject breakdown)
+  - [x] Implement Student/Parent analytics (personal progress: health score, attendance, scores, risk summary, subject performance, recent results)
