@@ -564,6 +564,14 @@ export const analyticsAPI = {
           top_subjects: [
             { subject_id: 1, subject_name: 'Mathematics', average_score_pct: 88, pass_rate_pct: 95, total_assessments: 10 },
             { subject_id: 2, subject_name: 'Physics', average_score_pct: 85, pass_rate_pct: 92, total_assessments: 8 },
+          ],
+          performance_trend: [
+            { label: 'Jan 2026', score_pct: 78.4 },
+            { label: 'Feb 2026', score_pct: 80.1 },
+            { label: 'Mar 2026', score_pct: 79.5 },
+            { label: 'Apr 2026', score_pct: 81.2 },
+            { label: 'May 2026', score_pct: 83.5 },
+            { label: 'Jun 2026', score_pct: 82.3 },
           ]
         };
       }
@@ -593,6 +601,14 @@ export const analyticsAPI = {
           student_summaries: [
             { student_id: 's_mock1', full_name: 'Alex Johnson', health_score: 92.5, attendance_rate_pct: 98, average_score_pct: 91, active_risk_count: 0 },
             { student_id: 's_mock2', full_name: 'Sarah Williams', health_score: 75.0, attendance_rate_pct: 82, average_score_pct: 70, active_risk_count: 1 },
+          ],
+          performance_trend: [
+            { label: 'Jan 2026', score_pct: 81.0 },
+            { label: 'Feb 2026', score_pct: 82.5 },
+            { label: 'Mar 2026', score_pct: 82.0 },
+            { label: 'Apr 2026', score_pct: 84.5 },
+            { label: 'May 2026', score_pct: 86.0 },
+            { label: 'Jun 2026', score_pct: 85.5 },
           ]
         };
       }
@@ -620,6 +636,14 @@ export const analyticsAPI = {
           ],
           recent_results: [
             { assessment_id: 1, assessment_title: 'Math Midterm', assessment_type: 'EXAM', subject_name: 'Mathematics', score: 94, max_score: 100, score_pct: 94, scheduled_date: '2026-09-01' },
+          ],
+          performance_trend: [
+            { label: 'Jan 2026', score_pct: 88.0 },
+            { label: 'Feb 2026', score_pct: 89.5 },
+            { label: 'Mar 2026', score_pct: 90.0 },
+            { label: 'Apr 2026', score_pct: 89.0 },
+            { label: 'May 2026', score_pct: 91.5 },
+            { label: 'Jun 2026', score_pct: 91.0 },
           ]
         };
       }

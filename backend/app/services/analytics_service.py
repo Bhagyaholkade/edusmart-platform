@@ -36,6 +36,7 @@ from app.schemas.analytics import (
     AssessmentResultSummary,
     AttendanceSummary,
     RiskSummary,
+    TrendPoint,
 )
 
 ATTENDANCE_WINDOW_DAYS = 30
@@ -184,6 +185,51 @@ async def _subject_performance(
     return sorted(out, key=lambda x: x.average_score_pct, reverse=True)
 
 
+async def _performance_trend(
+    db: AsyncSession,
+    student_ids: List[str],
+    class_id: Optional[int] = None,
+) -> List[TrendPoint]:
+    """Calculate average score percentage grouped by month."""
+    if not student_ids:
+        return []
+    
+    query = (
+        select(AssessmentResult, Assessment)
+        .join(Assessment, AssessmentResult.assessment_id == Assessment.id)
+        .where(AssessmentResult.student_id.in_(student_ids))
+        .where(Assessment.scheduled_date.is_not(None))
+    )
+    if class_id:
+        query = query.where(Assessment.class_id == class_id)
+        
+    result = await db.execute(query)
+    rows = result.all()
+    
+    # Group by YYYY-MM
+    by_month = {}
+    for ar, asmnt in rows:
+        if asmnt.max_score <= 0 or not asmnt.scheduled_date:
+            continue
+        # Use strftime to format as Mon YYYY
+        month_label = asmnt.scheduled_date.strftime("%b %Y")
+        # To keep chronological order easily, we also store the raw date
+        sort_key = asmnt.scheduled_date.strftime("%Y-%m")
+        if sort_key not in by_month:
+            by_month[sort_key] = {"label": month_label, "pcts": []}
+        by_month[sort_key]["pcts"].append(ar.score / asmnt.max_score * 100)
+        
+    out = []
+    # Sort chronologically by the YYYY-MM key
+    for sort_key in sorted(by_month.keys()):
+        data = by_month[sort_key]
+        pcts = data["pcts"]
+        avg = sum(pcts) / len(pcts)
+        out.append(TrendPoint(label=data["label"], score_pct=round(avg, 2)))
+    
+    return out
+
+
 # ---------------------------------------------------------------------------
 # Feature 8a: School Admin Analytics
 # ---------------------------------------------------------------------------
@@ -266,6 +312,9 @@ async def get_school_analytics(db: AsyncSession, school_id: int) -> SchoolAnalyt
 
     # Top 5 subjects across the school
     top_subjects = await _subject_performance(db, student_ids)
+    
+    # Overall performance trend
+    school_trend = await _performance_trend(db, student_ids)
 
     return SchoolAnalytics(
         school_id=school_id,
@@ -278,6 +327,7 @@ async def get_school_analytics(db: AsyncSession, school_id: int) -> SchoolAnalyt
         active_risk_signals=active_risks,
         classes=sorted(class_summaries, key=lambda c: c.grade_level),
         top_subjects=top_subjects[:5],
+        performance_trend=school_trend,
     )
 
 
@@ -373,6 +423,7 @@ async def get_teacher_analytics(
         )
 
     subject_perf = await _subject_performance(db, student_ids, class_id=class_id)
+    class_trend = await _performance_trend(db, student_ids, class_id=class_id)
 
     return TeacherAnalytics(
         teacher_id=teacher_id,
@@ -385,6 +436,7 @@ async def get_teacher_analytics(
         pass_rate_pct=pass_rate,
         at_risk_student_count=len(at_risk_ids),
         subject_performance=subject_perf,
+        performance_trend=class_trend,
         # sort by score desc so weakest students appear last
         student_summaries=sorted(
             student_summaries, key=lambda x: x.average_score_pct or 0.0, reverse=True
@@ -470,6 +522,9 @@ async def get_student_analytics(
 
     # Subject-level performance breakdown
     subject_perf = await _subject_performance(db, [student_id])
+    
+    # Personal performance trend
+    student_trend = await _performance_trend(db, [student_id])
 
     # 10 most recent assessment results (sorted by scheduled_date desc, then by id desc)
     results_q = await db.execute(
@@ -515,4 +570,5 @@ async def get_student_analytics(
         risk_summary=risk_summary,
         subject_performance=subject_perf,
         recent_results=recent_results,
+        performance_trend=student_trend,
     )

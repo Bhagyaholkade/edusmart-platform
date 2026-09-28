@@ -12,6 +12,11 @@ from typing import List, Optional
 # Common building blocks
 # ---------------------------------------------------------------------------
 
+class TrendPoint(BaseModel):
+    label: str
+    score_pct: float
+
+
 class SubjectPerformance(BaseModel):
     subject_id: int
     subject_name: str
@@ -58,6 +63,7 @@ class SchoolAnalytics(BaseModel):
     active_risk_signals: int
     classes: List[ClassSummary]
     top_subjects: List[SubjectPerformance]
+    performance_trend: List[TrendPoint] = []
 
 
 # ---------------------------------------------------------------------------
@@ -85,6 +91,7 @@ class TeacherAnalytics(BaseModel):
     at_risk_student_count: int
     subject_performance: List[SubjectPerformance]
     student_summaries: List[StudentSummary]
+    performance_trend: List[TrendPoint] = []
 
 
 # ---------------------------------------------------------------------------
@@ -113,3 +120,4 @@ class StudentAnalytics(BaseModel):
     risk_summary: Optional[RiskSummary] = None
     subject_performance: List[SubjectPerformance]
     recent_results: List[AssessmentResultSummary]
+    performance_trend: List[TrendPoint] = []

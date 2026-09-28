@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { analyticsAPI } from '../../services/api';
 import {
   School, Users, BookOpen, BarChart3, AlertCircle,
-  TrendingUp, Activity, User, Award, CheckCircle2, Zap
+  TrendingUp, Activity, User, Award, CheckCircle2, Zap, BrainCircuit
 } from 'lucide-react';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
+} from 'recharts';
 
 export default function AcademicAnalytics({ role, user, showToast }) {
   const [data, setData] = useState(null);
@@ -81,6 +84,20 @@ function SchoolAnalytics({ data }) {
         <MetricCard icon={AlertCircle} label="Active Risk Signals" value={data.active_risk_signals} color="var(--accent-rose)" />
       </div>
 
+      {data.performance_trend && data.performance_trend.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
+          <div className="glass-panel" style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff' }}>School Performance Trend</h3>
+              <AIInsightBadge data={data.performance_trend} />
+            </div>
+            <div style={{ height: '300px', width: '100%' }}>
+              <TrendChart data={data.performance_trend} />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
         <div className="glass-panel" style={{ padding: '1.5rem' }}>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', marginBottom: '1rem' }}>Top Performing Subjects</h3>
@@ -118,6 +135,18 @@ function TeacherAnalytics({ data }) {
         <MetricCard icon={TrendingUp} label="Average Score" value={`${data.class_average_score_pct}%`} color="var(--accent-cyan)" />
         <MetricCard icon={AlertCircle} label="At-Risk Students" value={data.at_risk_student_count} color="var(--accent-rose)" />
       </div>
+
+      {data.performance_trend && data.performance_trend.length > 0 && (
+        <div className="glass-panel" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff' }}>Class Average Trend</h3>
+            <AIInsightBadge data={data.performance_trend} />
+          </div>
+          <div style={{ height: '300px', width: '100%' }}>
+            <TrendChart data={data.performance_trend} color="#38bdf8" />
+          </div>
+        </div>
+      )}
 
       <div className="glass-panel" style={{ padding: '1.5rem' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', marginBottom: '1rem' }}>Student Performance Summaries</h3>
@@ -162,8 +191,20 @@ function StudentAnalytics({ data }) {
         <MetricCard icon={Zap} label="Overall Health Score" value={data.overall_health_score} color="var(--accent-emerald)" />
         <MetricCard icon={CheckCircle2} label="Attendance Rate" value={`${data.attendance.attendance_rate_pct}%`} color="var(--accent-cyan)" />
         <MetricCard icon={Award} label="Average Score" value={`${data.average_score_pct}%`} color="var(--accent-primary)" />
-        <MetricCard icon={AlertCircle} label="Active Risks" value={data.risk_summary.total_active_signals} color="var(--accent-rose)" />
+        <MetricCard icon={AlertCircle} label="Active Risks" value={data.risk_summary?.total_active_signals || 0} color="var(--accent-rose)" />
       </div>
+
+      {data.performance_trend && data.performance_trend.length > 0 && (
+        <div className="glass-panel" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff' }}>My Progress Trend</h3>
+            <AIInsightBadge data={data.performance_trend} />
+          </div>
+          <div style={{ height: '300px', width: '100%' }}>
+            <TrendChart data={data.performance_trend} color="#34d399" />
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
         <div className="glass-panel" style={{ padding: '1.5rem' }}>
@@ -224,3 +265,79 @@ function ProgressBar({ label, value, subtext, color }) {
     </div>
   );
 }
+
+function TrendChart({ data, color = '#818cf8' }) {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <defs>
+          <linearGradient id={`colorGradient-${color}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={color} stopOpacity={0.4}/>
+            <stop offset="95%" stopColor={color} stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+        <XAxis 
+          dataKey="label" 
+          stroke="#64748b" 
+          tick={{ fill: '#64748b', fontSize: 12 }}
+          tickLine={false}
+          axisLine={false}
+          dy={10}
+        />
+        <YAxis 
+          stroke="#64748b" 
+          tick={{ fill: '#64748b', fontSize: 12 }}
+          tickLine={false}
+          axisLine={false}
+          domain={['dataMin - 5', 'dataMax + 5']}
+        />
+        <Tooltip 
+          contentStyle={{ 
+            backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '8px',
+            color: '#fff'
+          }}
+          itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+        />
+        <Area 
+          type="monotone" 
+          dataKey="score_pct" 
+          stroke={color} 
+          strokeWidth={3}
+          fillOpacity={1} 
+          fill={`url(#colorGradient-${color})`} 
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+}
+
+function AIInsightBadge({ data }) {
+  if (!data || data.length < 2) return null;
+  
+  const current = data[data.length - 1].score_pct;
+  const previous = data[data.length - 2].score_pct;
+  const diff = (current - previous).toFixed(1);
+  const isUp = diff > 0;
+
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      padding: '0.4rem 0.8rem',
+      background: 'rgba(99, 102, 241, 0.1)',
+      border: '1px solid rgba(99, 102, 241, 0.3)',
+      borderRadius: '20px',
+      fontSize: '0.8rem'
+    }}>
+      <BrainCircuit size={16} color="#818cf8" />
+      <span style={{ color: '#c7d2fe' }}>
+        <strong>AI Insight:</strong> Performance is trending <strong style={{ color: isUp ? '#34d399' : '#f87171' }}>{isUp ? 'up' : 'down'} by {Math.abs(diff)}%</strong> compared to last period.
+      </span>
+    </div>
+  );
+}
+
